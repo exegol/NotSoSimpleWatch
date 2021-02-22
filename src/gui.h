@@ -10,6 +10,8 @@ Created by Lewis he on October 10, 2019.
 #ifndef __GUI_H
 #define __GUI_H
 
+#define GUI_NAME "EXEGOL"
+
 typedef enum {
     LV_ICON_BAT_EMPTY,
     LV_ICON_BAT_1,

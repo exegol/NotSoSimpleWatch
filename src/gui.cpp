@@ -164,11 +164,7 @@ public:
     void hidden(bool en = true)
     {
         lv_obj_set_hidden(_bar, en);
-        /*
-        for (int i = 0; i < 6; i++) {
-            lv_obj_set_hidden(_array[i].icon, en);
-        }
-        */
+        
     }
 
     uint8_t height()
@@ -402,7 +398,7 @@ void setupGui()
 
     // Name label
     lv_obj_t * nameLabel  = lv_label_create(mainBar, NULL);
-    lv_label_set_text(nameLabel, "WARLORD");
+    lv_label_set_text(nameLabel, GUI_NAME);
     lv_obj_align(nameLabel, NULL, LV_ALIGN_IN_TOP_MID, 0, 10);
     
     //! Time
@@ -416,18 +412,6 @@ void setupGui()
     updateTime();
 
         
-/*
-    lv_obj_t * nameLabel  = lv_label_create(mainBar, NULL);
-    lv_label_set_text(nameLabel, "WARLORD");
-    //lv_obj_add_style(nameLabel, LV_OBJ_PART_MAIN, &timeStyle);
-    lv_obj_align(nameLabel, timeLabel, LV_ALIGN_IN_TOP_MID, 0, 50);
-
-    lv_obj_t *label = lv_label_create(_obj[i], NULL);
-    lv_label_set_text(label, config[i].name);
-    lv_obj_align(label, img, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
-*/
-
-
     //! menu
     static lv_style_t style_pr;
 
@@ -456,6 +440,26 @@ void updateStepCounter(uint32_t counter)
     bar.setStepCounter(counter);
 }
 
+String getMonth(uint8_t mmonth)
+{
+    String mStr;
+    switch (mmonth) {
+      case 1: mStr = "Jan"; break;
+      case 2: mStr = "Feb"; break;
+      case 3: mStr = "Mar"; break;
+      case 4: mStr = "Apr"; break;
+      case 5: mStr = "May"; break;
+      case 6: mStr = "Jun"; break;
+      case 7: mStr = "Jul"; break;
+      case 8: mStr = "Aug"; break;
+      case 9: mStr = "Sep"; break;
+      case 10: mStr = "Oct"; break;
+      case 11: mStr = "Nov"; break;
+      case 12: mStr = "Dec"; break;
+    }
+    return mStr;
+}
+
 static void updateTime()
 {
     time_t now;
@@ -469,8 +473,15 @@ static void updateTime()
     lv_obj_align(timeLabel, NULL, LV_ALIGN_IN_TOP_MID, 0, 30);
 
     TTGOClass *ttgo = TTGOClass::getWatch();
-    lv_label_set_text(dateLabel, ttgo->rtc->formatDateTime(PCF_TIMEFORMAT_DD_MM_YYYY));
+    //lv_label_set_text(dateLabel, ttgo->rtc->formatDateTime(PCF_TIMEFORMAT_DD_MM_YYYY));
+    
+    RTC_Date tnow = ttgo->rtc->getDateTime();
+    char dateStr[15];
+    sprintf(dateStr, "%d %s %d", tnow.day, getMonth(tnow.month), tnow.year);
+    lv_label_set_text(dateLabel, dateStr);
     lv_obj_align(dateLabel, timeLabel, LV_ALIGN_IN_TOP_MID, 0, 60);
+
+    
 
     ttgo->rtc->syncToRtc();
 }
