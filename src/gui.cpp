@@ -18,6 +18,7 @@ Created by Lewis he on October 10, 2019.
 #include "FS.h"
 #include "SD.h"
 #include "appSetTime.h"
+#include "storage/NVSWriter.h"
 
 #define RTC_TIME_ZONE   "CST-8"
 
@@ -328,6 +329,7 @@ MenuBar::lv_menu_config_t _cfg[7] = {
 
 MenuBar menuBars;
 StatusBar bar;
+NVSWriter nvsWriter;
 
 static void event_handler(lv_obj_t *obj, lv_event_t event)
 {
@@ -435,9 +437,16 @@ void setupGui()
     lv_task_create(lv_battery_task, 30000, LV_TASK_PRIO_LOWEST, NULL);
 }
 
+uint8_t u8DayNow = 0;
+
 void updateStepCounter(uint32_t counter)
 {
-    bar.setStepCounter(counter);
+    uint32_t _counter = counter;
+    if (u8DayNow){
+        _counter = nvsWriter.updateCount(u8DayNow, _counter);
+    }
+    
+    bar.setStepCounter(_counter);
 }
 
 String getMonth(uint8_t mmonth)
@@ -481,8 +490,8 @@ static void updateTime()
     lv_label_set_text(dateLabel, dateStr);
     lv_obj_align(dateLabel, timeLabel, LV_ALIGN_IN_TOP_MID, 0, 60);
 
+    u8DayNow = tnow.day;
     
-
     ttgo->rtc->syncToRtc();
 }
 
