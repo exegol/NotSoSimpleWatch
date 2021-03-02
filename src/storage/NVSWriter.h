@@ -12,7 +12,7 @@
 #define STEPCT_STODAYS "StepC_StoDays" //no of stored days
 #define STEPCT_DAY "StepC_Day_" // stored day counts _0 ... _N
 #define STEPCT_HANDLE "StepCounter"
-#define NVS_KEY_SIZE 16
+#define STEPCT_KEY_SIZE 16
 
 class NVSWriter
 {

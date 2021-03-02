@@ -364,8 +364,8 @@ void setupGui()
     //void *images[] = {(void *) &bg, (void *) &bg1, (void *) &bg2, (void *) &bg3 };
     lv_obj_t *scr = lv_scr_act();
     lv_obj_t *img_bin = lv_img_create(scr, NULL);  /*Create an image object*/
-    srand((int)time(0));
-    int r = rand() % 4;
+    //srand((int)time(0));
+    //int r = rand() % 4;
     //lv_img_set_src(img_bin, images[r]);
     lv_img_set_src(img_bin, (void *) &matrix1);
     lv_obj_align(img_bin, NULL, LV_ALIGN_CENTER, 0, 0);
@@ -449,7 +449,7 @@ void updateStepCounter(uint32_t counter)
     bar.setStepCounter(_counter);
 }
 
-String getMonth(uint8_t mmonth)
+const char* getMonth(uint8_t mmonth)
 {
     String mStr;
     switch (mmonth) {
@@ -466,7 +466,7 @@ String getMonth(uint8_t mmonth)
       case 11: mStr = "Nov"; break;
       case 12: mStr = "Dec"; break;
     }
-    return mStr;
+    return mStr.c_str();
 }
 
 static void updateTime()
