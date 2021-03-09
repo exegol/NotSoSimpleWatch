@@ -6,6 +6,24 @@
 #include "nvs.h"
 #include "NVSWriter.h"
 
+struct NVSException : public std::exception
+{
+    esp_err_t err;
+    const char *what() const throw()
+    {
+        switch (err)
+        {
+        case ESP_ERR_NVS_NO_FREE_PAGES:
+            return "NVS error: no free pages";
+        case ESP_ERR_NVS_NEW_VERSION_FOUND:
+            return "NVS error: newer version found";
+        case ESP_ERR_NVS_NOT_FOUND:
+            return "NVS error: not found, variable not initialized yet";
+        }
+    }
+    NVSException(esp_err_t e) { err = e; }
+};
+
 NVSWriter::NVSWriter() {}
 
 NVSWriter::~NVSWriter() {}
@@ -18,9 +36,10 @@ bool NVSWriter::init()
     {
         // NVS partition was truncated and needs to be erased
         // Retry nvs_flash_init
-        Serial.printf("NVM init error - erazing flash!");
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        err = nvs_flash_init();
+        Serial.printf("NVM init error!");
+        //Serial.printf("NVM init error - erazing flash!");
+        //ESP_ERROR_CHECK(nvs_flash_erase());
+        //err = nvs_flash_init();
     }
     ESP_ERROR_CHECK(err);
 
@@ -47,9 +66,10 @@ int32_t NVSWriter::read_i32(const char *key, nvs_handle *handle)
         break;
     case ESP_ERR_NVS_NOT_FOUND:
         Serial.printf("The value is not initialized yet!\n");
-        break;
+        return 0;
     default:
         Serial.printf("Error (%s) reading!\n", esp_err_to_name(err));
+        throw NVSException(err);
     }
     return i32value;
 }
@@ -57,7 +77,8 @@ int32_t NVSWriter::read_i32(const char *key, nvs_handle *handle)
 uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
 {
     static int i = 0;
-    if (i % 100 != 0) {  // runs through on first run, then every 100th
+    if (i % 100 != 0)
+    { // runs through on first run, then every 100th
         i++;
         return count;
     }
@@ -81,6 +102,10 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
             return count;
         }
         Serial.printf("NVS got handle");
+    }
+
+    if (cday == 0) {
+
     }
 
     char key[NVS_KEY_SIZE];

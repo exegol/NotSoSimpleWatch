@@ -11,6 +11,7 @@
 #define STEPCT_CURDAY "StepC_CurDay" //current day
 #define STEPCT_STODAYS "StepC_StoDays" //no of stored days
 #define STEPCT_DAY "StepC_Day_" // stored day counts _0 ... _N
+#define STEPCT_DIFF "StepC_Diff" //difference to counter value
 #define STEPCT_HANDLE "StepCounter"
 #define STEPCT_KEY_SIZE 16
 
@@ -36,6 +37,11 @@ private:
     bool isInitialized = false;
     bool hasError = false;
     nvs_handle nvsCountHandle = 0;
+    //cached values
+    uint8_t cday = 0;
+    int32_t cdiff = 0;
+    uint8_t cstodays = 0;
+
 };
 
 #endif
