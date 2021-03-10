@@ -30,6 +30,9 @@ NVSWriter::~NVSWriter() {}
 
 bool NVSWriter::init()
 {
+    if (isInitialized) {
+        return true;
+    }
     // Initialize NVS
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)
@@ -46,11 +49,10 @@ bool NVSWriter::init()
     if (err == ESP_OK)
     {
         isInitialized = true;
-        Serial.printf("NVM init ok");
+        Serial.println("NVM init ok");
         return true;
     }
-    Serial.printf("NVM init failed");
-    return false;
+    throw NVSException(err);
 }
 
 int32_t NVSWriter::read_i32(const char *key, nvs_handle *handle)
@@ -80,51 +82,63 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
     if (i % 100 != 0)
     { // runs through on first run, then every 100th
         i++;
-        return count;
+        return ccount ? ccount : count;
     }
     i = 1;
 
     esp_err_t err;
 
-    if (!isInitialized && !init())
+    try
     {
-        Serial.printf("NVS init error, aborting...");
-        return count;
-    }
-
-    if (!nvsCountHandle)
-    {
-        Serial.printf("\nOpening Non-Volatile Storage (NVS) handle... ");
-        err = nvs_open(STEPCT_HANDLE, NVS_READWRITE, &nvsCountHandle);
-        if (err != ESP_OK)
+        if (!isInitialized && !init())
         {
-            Serial.printf("Error (%s) opening NVS handle!\n", esp_err_to_name(err));
-            return count;
+            Serial.println("NVS init error, aborting...");
+            return ccount ? ccount : count;
         }
-        Serial.printf("NVS got handle");
+
+        if (!nvsCountHandle)
+        {
+            Serial.println("\nOpening Non-Volatile Storage (NVS) handle... ");
+            err = nvs_open(STEPCT_HANDLE, NVS_READWRITE, &nvsCountHandle);
+            if (err != ESP_OK)
+            {
+                Serial.printf("Error (%s) opening NVS handle!\n", esp_err_to_name(err));
+                return ccount ? ccount : count;
+            }
+            Serial.println("NVS got handle");
+        }
+
+        if (cday == 0)
+        {
+            int32_t retday = read_i32(STEPCT_CURDAY, &nvsCountHandle);
+            if (retday == 0)
+            {
+                cday = day;
+            }
+        }
+
+        char key[NVS_KEY_SIZE];
+        sprintf(key, "%s%d", STEPCT_DAY, 0);
+        err = nvs_set_i32(nvsCountHandle, key, count);
+        Serial.printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
+
+        // Commit written value.
+        // After setting any values, nvs_commit() must be called to ensure changes are written
+        // to flash storage. Implementations may write to storage at other times,
+        // but this is not guaranteed.
+        Serial.println("Committing updates in NVS ... ");
+        err = nvs_commit(nvsCountHandle);
+        Serial.printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
     }
-
-    if (cday == 0) {
-
+    catch (NVSException &ex)
+    {
+        Serial.println(ex.what());
     }
-
-    char key[NVS_KEY_SIZE];
-    sprintf(key, "%s%d", STEPCT_DAY, 0);
-    err = nvs_set_i32(nvsCountHandle, key, count);
-    Serial.printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
-
-    // Commit written value.
-    // After setting any values, nvs_commit() must be called to ensure changes are written
-    // to flash storage. Implementations may write to storage at other times,
-    // but this is not guaranteed.
-    Serial.printf("Committing updates in NVS ... ");
-    err = nvs_commit(nvsCountHandle);
-    Serial.printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
 
     // Close
     nvs_close(nvsCountHandle);
     nvsCountHandle = 0;
 
-    fflush(stdout);
-    return count;
+    //fflush(stdout);
+    return ccount ? ccount : count;
 }
