@@ -13,7 +13,7 @@
 #define STEPCT_DAY "StepC_Day_" // stored day counts _0 ... _N
 #define STEPCT_DIFF "StepC_Diff" //difference to counter value
 #define STEPCT_HANDLE "StepCounter"
-#define STEPCT_KEY_SIZE 16
+#define STEPCT_KEY_SIZE 16 //buffer size for STEPCT_DAY string
 
 class NVSWriter
 {
@@ -27,16 +27,20 @@ public:
 
     void writeCount(uint8_t day, uint32_t count);
 
-    int32_t read_i32(const char *key, nvs_handle *handle);
-
     uint32_t getCount(uint8_t day, uint8_t index = 0);
 
     uint32_t updateCount(uint8_t day, uint32_t count);
 
 private:
+
+    int32_t read_i32(const char *key, nvs_handle *handle);
+
+    void write_i32(const char *key, nvs_handle *handle, int32_t value);
+
     bool isInitialized = false;
     bool hasError = false;
     nvs_handle nvsCountHandle = 0;
+
     //cached values
     uint8_t cday = 0;
     int32_t cdiff = 0;

@@ -30,7 +30,8 @@ NVSWriter::~NVSWriter() {}
 
 bool NVSWriter::init()
 {
-    if (isInitialized) {
+    if (isInitialized)
+    {
         return true;
     }
     // Initialize NVS
@@ -57,10 +58,9 @@ bool NVSWriter::init()
 
 int32_t NVSWriter::read_i32(const char *key, nvs_handle *handle)
 {
-    // Read
     Serial.printf("Reading from NVS ... ");
     int32_t i32value = 0; // value will default to 0, if not set yet in NVS
-    esp_err_t err = nvs_get_i32(*handle, "restart_counter", &i32value);
+    esp_err_t err = nvs_get_i32(*handle, key, &i32value);
     switch (err)
     {
     case ESP_OK:
@@ -76,6 +76,19 @@ int32_t NVSWriter::read_i32(const char *key, nvs_handle *handle)
     return i32value;
 }
 
+void NVSWriter::write_i32(const char *key, nvs_handle *handle, int32_t value)
+{
+    esp_err_t err = nvs_set_i32(*handle, key, value);
+    switch (err)
+    {
+    case ESP_OK:
+        return;
+    default:
+        Serial.printf("Error (%s) writing!\n", esp_err_to_name(err));
+        throw NVSException(err);
+    }
+}
+
 uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
 {
     static int i = 0;
@@ -85,9 +98,7 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
         return ccount ? ccount : count;
     }
     i = 1;
-
     esp_err_t err;
-
     try
     {
         if (!isInitialized && !init())
@@ -111,13 +122,22 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
         if (cday == 0)
         {
             int32_t retday = read_i32(STEPCT_CURDAY, &nvsCountHandle);
-            if (retday == 0)
+            if (retday == 0) // init case
             {
                 cday = day;
+                ccount = count;
+                cdiff = 0;
+                char key[STEPCT_KEY_SIZE];
+                sprintf(key, "%s%d", STEPCT_DAY, 1);
+                write_i32(STEPCT_CURDAY, &nvsCountHandle, day);
+                write_i32(STEPCT_STODAYS, &nvsCountHandle, 1);
+                write_i32(key, &nvsCountHandle, count);
+                write_i32(STEPCT_DIFF, &nvsCountHandle, 0);
+                
             }
         }
 
-        char key[NVS_KEY_SIZE];
+        char key[STEPCT_KEY_SIZE];
         sprintf(key, "%s%d", STEPCT_DAY, 0);
         err = nvs_set_i32(nvsCountHandle, key, count);
         Serial.printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
