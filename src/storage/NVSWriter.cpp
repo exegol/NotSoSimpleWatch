@@ -128,13 +128,30 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
                 ccount = count;
                 cdiff = 0;
                 char key[STEPCT_KEY_SIZE];
-                sprintf(key, "%s%d", STEPCT_DAY, 1);
+                sprintf(key, "%s%d", STEPCT_DAY, 0);
                 write_i32(STEPCT_CURDAY, &nvsCountHandle, day);
                 write_i32(STEPCT_STODAYS, &nvsCountHandle, 1);
                 write_i32(key, &nvsCountHandle, count);
                 write_i32(STEPCT_DIFF, &nvsCountHandle, 0);
-                
             }
+            else if (retday != day) // day change - values need to be copied
+            {
+            }
+            else // retday == date - load data from flash
+            {
+                if (ccount > count) // counter overflow
+                {
+                }
+            }
+        }
+        else if (cday == day) // standard case, persist change
+        {
+            if (ccount > count) // counter overflow
+            {
+            }
+        }
+        else if (cday != day) // day change - values need to be copied
+        {
         }
 
         char key[STEPCT_KEY_SIZE];
