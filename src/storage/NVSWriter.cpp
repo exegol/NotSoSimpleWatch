@@ -132,7 +132,7 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
     if (i % 100 != 0)
     { // runs through on first run, then every 100th
         i++;
-        return ccount ? ccount : count;
+        return ccount ? ccount - cdiff : count;
     }
     i = 1;
     esp_err_t err;
@@ -186,7 +186,8 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
                
                 if (count < rcount1 + retDiff) // counter overflow
                 {
-                    dayChange(day, count); // saving old values, adding an artifical new day for not loosing step counts - maybe not completely ideal
+                    cdiff = -(rcount1 - retDiff); // adding old count to diff
+                    write_i32(STEPCT_DIFF, &nvsCountHandle, cdiff);
                 }
                 else{ // only loading + persisting new count
                     cdiff = retDiff;

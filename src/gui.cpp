@@ -19,6 +19,7 @@ Created by Lewis he on October 10, 2019.
 #include "SD.h"
 #include "appSetTime.h"
 #include "storage/NVSWriter.h"
+#include "appStepCount.h"
 
 #define RTC_TIME_ZONE   "CST-8"
 
@@ -75,6 +76,7 @@ static void camera_event_cb();
 static void wifi_destory();
 
 static void set_time_event_cb();
+static void show_step_count_event_cb();
 
 class StatusBar
 {
@@ -319,11 +321,12 @@ private:
 MenuBar::lv_menu_config_t _cfg[7] = {
     {.name = "WiFi",  .img = (void *) &wifi, .event_cb = wifi_event_cb},
     {.name = "Set Time",  .img = (void *) &setting, .event_cb = set_time_event_cb},
+    {.name = "Step Count",  .img = (void *) &CAMERA_PNG, .event_cb = show_step_count_event_cb },
     {.name = "Bluetooth",  .img = (void *) &bluetooth, /*.event_cb = bluetooth_event_cb*/},
     {.name = "SD Card",  .img = (void *) &sd,  /*.event_cb =sd_event_cb*/},
     {.name = "Light",  .img = (void *) &light, /*.event_cb = light_event_cb*/},
-    {.name = "Modules",  .img = (void *) &modules, /*.event_cb = modules_event_cb */},
-    {.name = "Camera",  .img = (void *) &CAMERA_PNG, /*.event_cb = camera_event_cb*/ }
+    {.name = "Modules",  .img = (void *) &modules, /*.event_cb = modules_event_cb */}
+    //{.name = "Camera",  .img = (void *) &CAMERA_PNG, /*.event_cb = camera_event_cb*/ }
 };
 
 
@@ -1294,6 +1297,19 @@ static void set_time_event_cb()
     menuBars.hidden(false);
     bar.hidden(false);
 }
+
+static void show_step_count_event_cb()
+{
+    menuBars.hidden();
+    bar.hidden();
+
+    //call menu
+    appShowStepCount();
+
+    menuBars.hidden(false);
+    bar.hidden(false);
+}
+
 
 static void wifi_destory()
 {
