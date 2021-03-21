@@ -37,6 +37,13 @@ private:
 
     void write_i32(const char *key, nvs_handle *handle, int32_t value);
 
+    /**
+     * @brief copies the day counts one position ahead, storing max. 7 days
+     * loosing the oldest value.
+     * Also handling counter resets/overflows - the counter seems to overflow at 65k.
+     */
+    void dayChange(uint8_t day, uint32_t count);
+
     bool isInitialized = false;
     bool hasError = false;
     nvs_handle nvsCountHandle = 0;

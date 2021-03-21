@@ -89,6 +89,43 @@ void NVSWriter::write_i32(const char *key, nvs_handle *handle, int32_t value)
     }
 }
 
+void NVSWriter::dayChange(uint8_t day, uint32_t count)
+{
+    char key[STEPCT_KEY_SIZE];
+                sprintf(key, "%s%d", STEPCT_DAY, 1);
+                int32_t rcount1 = read_i32(key, &nvsCountHandle);
+                int32_t retDiff = read_i32(STEPCT_DIFF, &nvsCountHandle);
+                int32_t retStoDays = read_i32(STEPCT_STODAYS, &nvsCountHandle);
+               
+                retStoDays = retStoDays + 1 > 7 ? 7 : retStoDays + 1;
+                for (int32_t i = retStoDays; i > 1; i--)
+                {
+                    sprintf(key, "%s%d", STEPCT_DAY, i-1);
+                    int32_t rcount = read_i32(key, &nvsCountHandle);
+
+                    sprintf(key, "%s%d", STEPCT_DAY, i);
+                    write_i32(key, &nvsCountHandle, rcount);
+                }
+                write_i32(STEPCT_CURDAY, &nvsCountHandle, day);
+                write_i32(STEPCT_STODAYS, &nvsCountHandle, retStoDays);
+                cstodays = retStoDays;
+                cday = day;
+                ccount = count;
+
+                if (count < rcount1 + retDiff) { //counter overflow
+                    cdiff = 0;
+                    write_i32(key, &nvsCountHandle, count);
+                    write_i32(STEPCT_DIFF, &nvsCountHandle, 0);
+                } 
+                else 
+                {
+                    cdiff = retDiff + rcount1;
+                    write_i32(STEPCT_DIFF, &nvsCountHandle, cdiff);
+                    sprintf(key, "%s%d", STEPCT_DAY, 1);
+                    write_i32(key, &nvsCountHandle, count - cdiff);
+                }
+}
+
 uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
 {
     static int i = 0;
@@ -127,8 +164,9 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
                 cday = day;
                 ccount = count;
                 cdiff = 0;
+                cstodays = 1;
                 char key[STEPCT_KEY_SIZE];
-                sprintf(key, "%s%d", STEPCT_DAY, 0);
+                sprintf(key, "%s%d", STEPCT_DAY, 1);
                 write_i32(STEPCT_CURDAY, &nvsCountHandle, day);
                 write_i32(STEPCT_STODAYS, &nvsCountHandle, 1);
                 write_i32(key, &nvsCountHandle, count);
@@ -136,23 +174,27 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
             }
             else if (retday != day) // day change - values need to be copied
             {
-                int32_t retStoDays = read_i32(STEPCT_STODAYS, &nvsCountHandle);
-                retStoDays = retStoDays + 1 > 7 ? 7 : retStoDays + 1;
-                for (int32_t i = retStoDays; i > 1; i--)
-                {
-                    char key[STEPCT_KEY_SIZE];
-                    sprintf(key, "%s%d", STEPCT_DAY, i-1);
-                    int32_t rcount = read_i32(key, &nvsCountHandle);
-
-                    sprintf(key, "%s%d", STEPCT_DAY, i);
-                    write_i32(key, &nvsCountHandle, rcount);
-                }
-                write_i32(STEPCT_CURDAY, &nvsCountHandle, day);
+                dayChange(day, count);
             }
             else // retday == date - load data from flash
             {
-                if (ccount > count) // counter overflow
+                char key[STEPCT_KEY_SIZE];
+                sprintf(key, "%s%d", STEPCT_DAY, 1);
+                int32_t rcount1 = read_i32(key, &nvsCountHandle);
+                int32_t retDiff = read_i32(STEPCT_DIFF, &nvsCountHandle);
+                int32_t retStoDays = read_i32(STEPCT_STODAYS, &nvsCountHandle);
+               
+                if (count < rcount1 + retDiff) // counter overflow
                 {
+                    dayChange(day, count); // saving old values, adding an artifical new day for not loosing step counts - maybe not completely ideal
+                }
+                else{ // only loading + persisting new count
+                    cdiff = retDiff;
+                    cstodays = retStoDays;
+                    ccount = count;
+                    char key[STEPCT_KEY_SIZE];
+                    sprintf(key, "%s%d", STEPCT_DAY, 1);
+                    write_i32(key, &nvsCountHandle, count - cdiff);                    
                 }
             }
         }
@@ -160,17 +202,21 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
         {
             if (ccount > count) // counter overflow
             {
+                dayChange(day, count);
+            }
+            else 
+            {
+                char key[STEPCT_KEY_SIZE];
+                sprintf(key, "%s%d", STEPCT_DAY, 1);
+                write_i32(key, &nvsCountHandle, count - cdiff);
             }
         }
         else if (cday != day) // day change - values need to be copied
         {
+            dayChange(day, count);
         }
 
-        char key[STEPCT_KEY_SIZE];
-        sprintf(key, "%s%d", STEPCT_DAY, 0);
-        err = nvs_set_i32(nvsCountHandle, key, count);
-        Serial.printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
-
+        
         // Commit written value.
         // After setting any values, nvs_commit() must be called to ensure changes are written
         // to flash storage. Implementations may write to storage at other times,

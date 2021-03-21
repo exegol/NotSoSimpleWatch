@@ -449,9 +449,9 @@ void updateStepCounter(uint32_t counter)
     bar.setStepCounter(_counter);
 }
 
+String mStr;
 const char* getMonth(uint8_t mmonth)
 {
-    String mStr;
     switch (mmonth) {
       case 1: mStr = "Jan"; break;
       case 2: mStr = "Feb"; break;
