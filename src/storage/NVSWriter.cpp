@@ -136,6 +136,18 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
             }
             else if (retday != day) // day change - values need to be copied
             {
+                int32_t retStoDays = read_i32(STEPCT_STODAYS, &nvsCountHandle);
+                retStoDays = retStoDays + 1 > 7 ? 7 : retStoDays + 1;
+                for (int32_t i = retStoDays; i > 1; i--)
+                {
+                    char key[STEPCT_KEY_SIZE];
+                    sprintf(key, "%s%d", STEPCT_DAY, i-1);
+                    int32_t rcount = read_i32(key, &nvsCountHandle);
+
+                    sprintf(key, "%s%d", STEPCT_DAY, i);
+                    write_i32(key, &nvsCountHandle, rcount);
+                }
+                write_i32(STEPCT_CURDAY, &nvsCountHandle, day);
             }
             else // retday == date - load data from flash
             {
