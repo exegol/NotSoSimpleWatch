@@ -20,6 +20,7 @@ struct NVSException : public std::exception
         case ESP_ERR_NVS_NOT_FOUND:
             return "NVS error: not found, variable not initialized yet";
         }
+        return "unknown NVS error";
     }
     NVSException(esp_err_t e) { err = e; }
 };
