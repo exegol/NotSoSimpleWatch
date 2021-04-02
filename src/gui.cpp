@@ -1146,9 +1146,9 @@ static Keyboard *kb = nullptr;
 static Switch *sw = nullptr;
 static Preload *pl = nullptr;
 static List *list = nullptr;
-static Task *task = nullptr;
+//static Task *task = nullptr;
 static Ticker *gTicker = nullptr;
-static MBox *mbox = nullptr;
+//static MBox *mbox = nullptr;
 
 static char ssid[64], password[64];
 
@@ -1310,7 +1310,7 @@ static void show_step_count_event_cb()
     bar.hidden(false);
 }
 
-
+/*
 static void wifi_destory()
 {
     Serial.printf("globalIndex:%d\n", globalIndex);
@@ -1364,25 +1364,25 @@ static void wifi_destory()
     }
     globalIndex--;
 }
-
+*/
 
 /*****************************************************************
  *
  *          !SETTING EVENT
  *
- */
+
 static void setting_event_cb()
 {
 
 
 }
-
+ */
 
 /*****************************************************************
  *
  *          ! LIGHT EVENT
  *
- */
+ 
 static void light_sw_event_cb(uint8_t index, bool en)
 {
     //Add lights that need to be controlled
@@ -1411,13 +1411,13 @@ static void light_event_cb()
         sw->setStatus(i, 0);
     }
 }
-
+*/
 
 /*****************************************************************
  *
  *          ! MBOX EVENT
  *
- */
+
 static lv_obj_t *mbox1 = nullptr;
 
 static void create_mbox(const char *txt, lv_event_cb_t event_cb)
@@ -1447,36 +1447,37 @@ static void destory_mbox()
         mbox1 = nullptr;
     }
 }
-
+ */
 /*****************************************************************
  *
  *          ! SD CARD EVENT
  *
- */
 
 static void sd_event_cb()
 {
 
 }
+ */
 
 /*****************************************************************
 *
  *          ! Modules EVENT
  *
- */
+
 static void modules_event_cb()
 {
 
 }
-
+ */
 
 /*****************************************************************
 *
  *          ! Camera EVENT
  *
- */
+
 
 static void camera_event_cb()
 {
 
 }
+ */
