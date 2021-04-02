@@ -92,47 +92,52 @@ void NVSWriter::write_i32(const char *key, nvs_handle *handle, int32_t value)
 void NVSWriter::dayChange(uint8_t day, uint32_t count)
 {
     char key[STEPCT_KEY_SIZE];
-                sprintf(key, "%s%d", STEPCT_DAY, 1);
-                int32_t rcount1 = read_i32(key, &nvsCountHandle);
-                int32_t retDiff = read_i32(STEPCT_DIFF, &nvsCountHandle);
-                int32_t retStoDays = read_i32(STEPCT_STODAYS, &nvsCountHandle);
-               
-                retStoDays = retStoDays + 1 > 7 ? 7 : retStoDays + 1;
-                for (int32_t i = retStoDays; i > 1; i--)
-                {
-                    sprintf(key, "%s%d", STEPCT_DAY, i-1);
-                    int32_t rcount = read_i32(key, &nvsCountHandle);
+    sprintf(key, "%s%d", STEPCT_DAY, 1);
+    int32_t rcount1 = read_i32(key, &nvsCountHandle);
+    int32_t retDiff = read_i32(STEPCT_DIFF, &nvsCountHandle);
+    int32_t retStoDays = read_i32(STEPCT_STODAYS, &nvsCountHandle);
+    Serial.printf("day change, day1: %d, diff: %d, sto.days: %d\n", rcount1, retDiff, retStoDays);
 
-                    sprintf(key, "%s%d", STEPCT_DAY, i);
-                    write_i32(key, &nvsCountHandle, rcount);
-                }
-                write_i32(STEPCT_CURDAY, &nvsCountHandle, day);
-                write_i32(STEPCT_STODAYS, &nvsCountHandle, retStoDays);
-                cstodays = retStoDays;
-                cday = day;
-                ccount = count;
+    retStoDays = retStoDays + 1 > 7 ? 7 : retStoDays + 1;
+    for (int32_t i = retStoDays; i > 1; i--)
+    {
+        sprintf(key, "%s%d", STEPCT_DAY, i - 1);
+        int32_t rcount = read_i32(key, &nvsCountHandle);
+        Serial.printf("i: %d, rcount: %d\n", i, rcount);
+        sprintf(key, "%s%d", STEPCT_DAY, i);
+        write_i32(key, &nvsCountHandle, rcount);
+    }
+    write_i32(STEPCT_CURDAY, &nvsCountHandle, day);
+    write_i32(STEPCT_STODAYS, &nvsCountHandle, retStoDays);
+    cstodays = retStoDays;
+    cday = day;
+    ccount = count;
 
-                if (count < rcount1 + retDiff) { //counter overflow
-                    cdiff = 0;
-                    write_i32(key, &nvsCountHandle, count);
-                    write_i32(STEPCT_DIFF, &nvsCountHandle, 0);
-                } 
-                else 
-                {
-                    cdiff = retDiff + rcount1;
-                    write_i32(STEPCT_DIFF, &nvsCountHandle, cdiff);
-                    sprintf(key, "%s%d", STEPCT_DAY, 1);
-                    write_i32(key, &nvsCountHandle, count - cdiff);
-                }
+    if (count < rcount1 + retDiff)
+    { //counter overflow
+        cdiff = 0;
+        write_i32(key, &nvsCountHandle, count);
+        write_i32(STEPCT_DIFF, &nvsCountHandle, 0);
+        Serial.printf("overflow, count: %d, diff: 0\n", count);
+    }
+    else
+    {
+        cdiff = retDiff + rcount1;
+        write_i32(STEPCT_DIFF, &nvsCountHandle, cdiff);
+        sprintf(key, "%s%d", STEPCT_DAY, 1);
+        write_i32(key, &nvsCountHandle, count - cdiff);
+        Serial.printf("day change, day1: %d, diff: %d\n", count - cdiff, cdiff);
+    }
 }
 
 uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
 {
     static int i = 0;
-    if (i % 100 != 0)
+    if (i % 10 != 0)
     { // runs through on first run, then every 100th
         i++;
-        return ccount ? ccount - cdiff : count;
+        Serial.printf("updateCount: i: %d, count in: %d, out: %d returning\n", i, count, ccount ? ccount - cdiff : count);
+        return ccount ? ccount - cdiff : count - cdiff;
     }
     i = 1;
     esp_err_t err;
@@ -161,6 +166,7 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
             int32_t retday = read_i32(STEPCT_CURDAY, &nvsCountHandle);
             if (retday == 0) // init case
             {
+                Serial.println("update count, init case");
                 cday = day;
                 ccount = count;
                 cdiff = 0;
@@ -183,33 +189,43 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
                 int32_t rcount1 = read_i32(key, &nvsCountHandle);
                 int32_t retDiff = read_i32(STEPCT_DIFF, &nvsCountHandle);
                 int32_t retStoDays = read_i32(STEPCT_STODAYS, &nvsCountHandle);
-               
+
                 if (count < rcount1 + retDiff) // counter overflow
                 {
                     cdiff = -(rcount1 - retDiff); // adding old count to diff
                     write_i32(STEPCT_DIFF, &nvsCountHandle, cdiff);
+                    Serial.printf("updateCount, init, pers date fits, counter overflow, new diff: %d\n", cdiff);
                 }
-                else{ // only loading + persisting new count
+                else
+                { // only loading + persisting new count
                     cdiff = retDiff;
                     cstodays = retStoDays;
                     ccount = count;
                     char key[STEPCT_KEY_SIZE];
                     sprintf(key, "%s%d", STEPCT_DAY, 1);
-                    write_i32(key, &nvsCountHandle, count - cdiff);                    
+                    write_i32(key, &nvsCountHandle, count - cdiff);
+                    Serial.printf("updateCount, new count: %d, diff: %d\n", count, cdiff);
                 }
             }
         }
         else if (cday == day) // standard case, persist change
         {
-            if (ccount > count) // counter overflow
+            if (ccount > count) // counter overflow or reset
             {
-                dayChange(day, count);
+                cdiff = count - ccount; // fixing diff to negative difference
+                ccount = count;
+                char key[STEPCT_KEY_SIZE];
+                sprintf(key, "%s%d", STEPCT_DAY, 1);
+                write_i32(key, &nvsCountHandle, count - cdiff);
+                write_i32(STEPCT_DIFF, &nvsCountHandle, cdiff);
+                Serial.printf("updateCount, overflow, count: %d, new diff: %d\n", count, cdiff);
             }
-            else 
+            else
             {
                 char key[STEPCT_KEY_SIZE];
                 sprintf(key, "%s%d", STEPCT_DAY, 1);
                 write_i32(key, &nvsCountHandle, count - cdiff);
+                Serial.printf("updateCount, new count: %d\n", count - cdiff);
             }
         }
         else if (cday != day) // day change - values need to be copied
@@ -217,7 +233,6 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
             dayChange(day, count);
         }
 
-        
         // Commit written value.
         // After setting any values, nvs_commit() must be called to ensure changes are written
         // to flash storage. Implementations may write to storage at other times,
@@ -236,5 +251,5 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
     nvsCountHandle = 0;
 
     //fflush(stdout);
-    return ccount ? ccount : count;
+    return ccount ? ccount - cdiff : count - cdiff;
 }
