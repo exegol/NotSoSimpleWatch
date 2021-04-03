@@ -60,20 +60,20 @@ static lv_obj_t *timeLabel = nullptr;
 static lv_obj_t *dateLabel = nullptr;
 static lv_obj_t *menuBtn = nullptr;
 
-static uint8_t globalIndex = 0;
-
 static void lv_update_task(struct _lv_task_t *);
 static void lv_battery_task(struct _lv_task_t *);
 static void updateTime();
 static void view_event_handler(lv_obj_t *obj, lv_event_t event);
 
 static void wifi_event_cb();
+/*
 static void sd_event_cb();
 static void setting_event_cb();
 static void light_event_cb();
 static void modules_event_cb();
 static void camera_event_cb();
 static void wifi_destory();
+*/
 
 static void set_time_event_cb();
 static void show_step_count_event_cb();
