@@ -59,13 +59,12 @@ bool NVSWriter::init()
 
 int32_t NVSWriter::read_i32(const char *key, nvs_handle *handle)
 {
-    Serial.printf("Reading from NVS ... ");
     int32_t i32value = 0; // value will default to 0, if not set yet in NVS
     esp_err_t err = nvs_get_i32(*handle, key, &i32value);
     switch (err)
     {
     case ESP_OK:
-        Serial.printf("NVM read value = %d\n", i32value);
+        Serial.printf("NVM read, key = %s, value = %d\n", key, i32value);
         break;
     case ESP_ERR_NVS_NOT_FOUND:
         Serial.printf("The value is not initialized yet!\n");
