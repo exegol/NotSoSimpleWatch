@@ -109,12 +109,11 @@ void NVSWriter::dayChange(uint8_t day, uint32_t count)
     }
     write_i32(STEPCT_CURDAY, &nvsCountHandle, day);
     write_i32(STEPCT_STODAYS, &nvsCountHandle, retStoDays);
-    cstodays = retStoDays;
     cday = day;
     ccount = count;
 
     if (count < rcount1 + retDiff)
-    { //counter overflow
+    {   //counter overflow, taking new value
         cdiff = 0;
         write_i32(key, &nvsCountHandle, count);
         write_i32(STEPCT_DIFF, &nvsCountHandle, 0);
@@ -169,8 +168,7 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
                 Serial.println("update count, init case");
                 cday = day;
                 ccount = count;
-                cdiff = 0;
-                cstodays = 1;
+                cdiff = 0;                
                 char key[STEPCT_KEY_SIZE];
                 sprintf(key, "%s%d", STEPCT_DAY, 1);
                 write_i32(STEPCT_CURDAY, &nvsCountHandle, day);
@@ -192,14 +190,15 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
 
                 if (count < rcount1 + retDiff) // counter overflow
                 {
-                    cdiff = -(rcount1 - retDiff); // adding old count to diff
+                    cday = day;
+                    ccount = count;
+                    cdiff = -rcount1; // adding old count to diff 
                     write_i32(STEPCT_DIFF, &nvsCountHandle, cdiff);
                     Serial.printf("updateCount, init, pers date fits, counter overflow, new diff: %d\n", cdiff);
                 }
                 else
                 { // only loading + persisting new count
                     cdiff = retDiff;
-                    cstodays = retStoDays;
                     ccount = count;
                     char key[STEPCT_KEY_SIZE];
                     sprintf(key, "%s%d", STEPCT_DAY, 1);

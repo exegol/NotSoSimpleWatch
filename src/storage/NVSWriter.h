@@ -50,8 +50,7 @@ private:
 
     //cached values
     uint8_t cday = 0;
-    int32_t cdiff = 0;
-    uint8_t cstodays = 0;
+    int32_t cdiff = 0;    
     uint32_t ccount = 0;
 
 };

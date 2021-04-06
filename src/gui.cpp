@@ -444,6 +444,7 @@ uint8_t u8DayNow = 0;
 
 void updateStepCounter(uint32_t counter)
 {
+    Serial.printf("gui.updateCount day=%d, counter=%d\n", u8DayNow, counter);
     uint32_t _counter = counter;
     if (u8DayNow){
         _counter = nvsWriter.updateCount(u8DayNow, _counter);
