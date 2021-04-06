@@ -98,7 +98,7 @@ void NVSWriter::dayChange(uint8_t day, uint32_t count)
     int32_t retStoDays = read_i32(STEPCT_STODAYS, &nvsCountHandle);
     Serial.printf("day change, day1: %d, diff: %d, sto.days: %d\n", rcount1, retDiff, retStoDays);
 
-    retStoDays = retStoDays + 1 > 7 ? 7 : retStoDays + 1;
+    retStoDays = retStoDays + 1 > STEPCT_HISTORY_SIZE ? STEPCT_HISTORY_SIZE : retStoDays + 1;
     for (int32_t i = retStoDays; i > 1; i--)
     {
         sprintf(key, "%s%d", STEPCT_DAY, i - 1);
@@ -113,7 +113,7 @@ void NVSWriter::dayChange(uint8_t day, uint32_t count)
     ccount = count;
 
     if (count < rcount1 + retDiff)
-    {   //counter overflow, taking new value
+    { //counter overflow, taking new value
         cdiff = 0;
         write_i32(key, &nvsCountHandle, count);
         write_i32(STEPCT_DIFF, &nvsCountHandle, 0);
@@ -129,6 +129,24 @@ void NVSWriter::dayChange(uint8_t day, uint32_t count)
     }
 }
 
+nvs_handle NVSWriter::getNvsCountHandle()
+{
+    if (!nvsCountHandle)
+    {
+        esp_err_t err;
+        init();
+        Serial.println("\nOpening Non-Volatile Storage (NVS) handle... ");
+        err = nvs_open(STEPCT_HANDLE, NVS_READWRITE, &nvsCountHandle);
+        if (err != ESP_OK)
+        {
+            Serial.printf("Error (%s) opening NVS handle!\n", esp_err_to_name(err));
+            throw NVSException(err);
+        }
+        Serial.println("NVS got handle");
+    }
+    return nvsCountHandle;
+}
+
 uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
 {
     static int i = 0;
@@ -142,24 +160,7 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
     esp_err_t err;
     try
     {
-        if (!isInitialized && !init())
-        {
-            Serial.println("NVS init error, aborting...");
-            return ccount ? ccount : count;
-        }
-
-        if (!nvsCountHandle)
-        {
-            Serial.println("\nOpening Non-Volatile Storage (NVS) handle... ");
-            err = nvs_open(STEPCT_HANDLE, NVS_READWRITE, &nvsCountHandle);
-            if (err != ESP_OK)
-            {
-                Serial.printf("Error (%s) opening NVS handle!\n", esp_err_to_name(err));
-                return ccount ? ccount : count;
-            }
-            Serial.println("NVS got handle");
-        }
-
+        getNvsCountHandle();
         if (cday == 0)
         {
             int32_t retday = read_i32(STEPCT_CURDAY, &nvsCountHandle);
@@ -168,7 +169,7 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
                 Serial.println("update count, init case");
                 cday = day;
                 ccount = count;
-                cdiff = 0;                
+                cdiff = 0;
                 char key[STEPCT_KEY_SIZE];
                 sprintf(key, "%s%d", STEPCT_DAY, 1);
                 write_i32(STEPCT_CURDAY, &nvsCountHandle, day);
@@ -186,13 +187,12 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
                 sprintf(key, "%s%d", STEPCT_DAY, 1);
                 int32_t rcount1 = read_i32(key, &nvsCountHandle);
                 int32_t retDiff = read_i32(STEPCT_DIFF, &nvsCountHandle);
-                int32_t retStoDays = read_i32(STEPCT_STODAYS, &nvsCountHandle);
-
+                
                 if (count < rcount1 + retDiff) // counter overflow
                 {
                     cday = day;
                     ccount = count;
-                    cdiff = -rcount1; // adding old count to diff 
+                    cdiff = -rcount1; // adding old count to diff
                     write_i32(STEPCT_DIFF, &nvsCountHandle, cdiff);
                     Serial.printf("updateCount, init, pers date fits, counter overflow, new diff: %d\n", cdiff);
                 }
@@ -251,4 +251,28 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
 
     //fflush(stdout);
     return ccount ? ccount - cdiff : count - cdiff;
+}
+
+uint32_t NVSWriter::getDayCount(uint8_t day)
+{
+    try
+    {
+        if (!historyLoaded)
+        {
+            getNvsCountHandle();
+            char key[STEPCT_KEY_SIZE];
+            for (int32_t i = 0; i < STEPCT_HISTORY_SIZE; i++)
+            {
+                sprintf(key, "%s%d", STEPCT_DAY, i+1);
+                countHistory[i] = read_i32(key, &nvsCountHandle);
+                Serial.printf("History count day %d:  %d\n", i+1, countHistory[i]);
+            }
+            historyLoaded = true;
+        }
+    }
+    catch (NVSException &ex)
+    {
+        Serial.println(ex.what());
+    }
+    return countHistory[day];
 }
