@@ -288,7 +288,7 @@ public:
 
             lv_obj_t *img = lv_img_create(_obj[i], NULL);
             lv_img_set_src(img, config[i].img);
-            lv_obj_align(img, _obj[i], LV_ALIGN_CENTER, 0, 0);
+            lv_obj_align(img, _obj[i], LV_ALIGN_CENTER, -20, -20);
 
             lv_obj_t *label = lv_label_create(_obj[i], NULL);
             lv_label_set_text(label, config[i].name);
