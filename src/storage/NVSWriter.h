@@ -32,7 +32,13 @@ public:
 
     uint32_t updateCount(uint8_t day, uint32_t count);
 
+    /**
+     * @param day persisted day count to be returned 0 (current day) .. STEPCT_HISTORY_SIZE-1 (oldest persisted day)
+     * @return number of counted steps
+     */
     uint32_t getDayCount(uint8_t day);
+
+    uint8_t getCDay();
 
 private:
 

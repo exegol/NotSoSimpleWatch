@@ -253,8 +253,16 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
     return ccount ? ccount - cdiff : count - cdiff;
 }
 
+uint8_t NVSWriter::getCDay()
+{
+    return cday;
+}
+
 uint32_t NVSWriter::getDayCount(uint8_t day)
 {
+    if (day >= STEPCT_HISTORY_SIZE)
+        return 0;
+
     try
     {
         if (!historyLoaded)
