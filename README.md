@@ -15,9 +15,11 @@ The Arduino IDE really stinks and is only a tool for beginners, therefore I chos
 4. The PlatformIO extension allows building and uploading
 
 ## Links
+* T-Watch 2020 hardware docs: https://t-watch-document-en.readthedocs.io/en/latest/introduction/product/2020.html
 * Basis library(also containing the SimpleWatch example: https://github.com/Xinyuan-LilyGO/TTGO_TWatch_Library
 * Dan Geigers T-Watch project: https://www.instructables.com/Lilygo-T-Watch-2020-Arduino-Framework/
 * LVGL graphics library (used in SimpleWatch): https://lvgl.io/
 * LVGL examples: https://github.com/lvgl/lv_examples
+* LVGL image converter: https://lvgl.io/tools/imageconverter
 * Espressif documentation on non-volatile storage(NVS): https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/storage/nvs_flash.html
 * NVS examples: https://github.com/espressif/esp-idf/tree/73db142403c6e5b763a0e1c07312200e9b622673/examples/storage/nvs_rw_value
