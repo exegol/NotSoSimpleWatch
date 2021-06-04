@@ -6,6 +6,7 @@
 #include "gui.h"
 #include "nvs_flash.h"
 #include "nvs.h"
+#include "time.h"
 
 
 #define STEPCT_CURDAY "StepC_CurDay" //current day
@@ -30,7 +31,7 @@ public:
 
     uint32_t getCount(uint8_t day, uint8_t index = 0);
 
-    uint32_t updateCount(uint8_t day, uint32_t count);
+    uint32_t updateCount(uint32_t count);
 
     /**
      * @param day persisted day count to be returned 0 (current day) .. STEPCT_HISTORY_SIZE-1 (oldest persisted day)
@@ -52,6 +53,10 @@ private:
      * Also handling counter resets/overflows - the counter seems to overflow at 65k.
      */
     void dayChange(uint8_t day, uint32_t count);
+
+    time_t getUnixTime();
+
+    tm* getTimeInfo();
 
     nvs_handle getNvsCountHandle();
 

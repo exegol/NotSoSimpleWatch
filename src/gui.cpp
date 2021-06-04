@@ -461,18 +461,9 @@ void setupGui()
     lv_task_create(lv_battery_task, 30000, LV_TASK_PRIO_LOWEST, NULL);
 }
 
-uint8_t u8DayNow = 0;
-
 void updateStepCounter(uint32_t counter)
 {
-    Serial.printf("gui.updateCount day=%d, counter=%d\n", u8DayNow, counter);
-    uint32_t _counter = counter;
-    if (u8DayNow)
-    {
-        _counter = nvsWriter.updateCount(u8DayNow, _counter);
-    }
-
-    bar.setStepCounter(_counter);
+    bar.setStepCounter(nvsWriter.updateCount(counter));
 }
 
 String mStr;
@@ -527,23 +518,16 @@ static void updateTime()
     char buf[64];
     time(&now);
     localtime_r(&now, &info);
+    //Serial.printf("updateTime: %d\n", now);
 
     strftime(buf, sizeof(buf), "%H:%M", &info);
     lv_label_set_text(timeLabel, buf);
     lv_obj_align(timeLabel, NULL, LV_ALIGN_IN_TOP_MID, 0, 30);
 
-    TTGOClass *ttgo = TTGOClass::getWatch();
-    //lv_label_set_text(dateLabel, ttgo->rtc->formatDateTime(PCF_TIMEFORMAT_DD_MM_YYYY));
-
-    RTC_Date tnow = ttgo->rtc->getDateTime();
     char dateStr[15];
-    sprintf(dateStr, "%d %s %d", tnow.day, getMonth(tnow.month), tnow.year);
+    sprintf(dateStr, "%d %s %d", info.tm_mday, getMonth(info.tm_mon+1), info.tm_year+1900);
     lv_label_set_text(dateLabel, dateStr);
     lv_obj_align(dateLabel, timeLabel, LV_ALIGN_IN_TOP_MID, 0, 60);
-
-    u8DayNow = tnow.day;
-
-    ttgo->rtc->syncToRtc();
 }
 
 void updateBatteryLevel()

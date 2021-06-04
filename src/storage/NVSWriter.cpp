@@ -147,7 +147,7 @@ nvs_handle NVSWriter::getNvsCountHandle()
     return nvsCountHandle;
 }
 
-uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
+uint32_t NVSWriter::updateCount(uint32_t count)
 {
     static int i = 0;
     if (i % 10 != 0)
@@ -157,7 +157,9 @@ uint32_t NVSWriter::updateCount(uint8_t day, uint32_t count)
         return ccount ? ccount - cdiff : count - cdiff;
     }
     i = 1;
+
     esp_err_t err;
+    int day = getTimeInfo()->tm_mday;
     try
     {
         getNvsCountHandle();
@@ -283,4 +285,19 @@ uint32_t NVSWriter::getDayCount(uint8_t day)
         Serial.println(ex.what());
     }
     return countHistory[day];
+}
+
+time_t NVSWriter::getUnixTime() 
+{
+    time_t now;
+    return time(&now);
+}
+
+tm* NVSWriter::getTimeInfo()
+{
+    tm* tm = new struct tm();
+    time_t time = getUnixTime();
+    localtime_r(&time, tm);
+    Serial.printf("time tm day: %d\n", tm->tm_mday);
+    return tm;
 }
