@@ -257,7 +257,14 @@ uint32_t NVSWriter::updateCount(uint32_t count)
 
 uint8_t NVSWriter::getCDay()
 {
-    return cday;
+    if (cday)
+    {
+        return cday;
+    }
+    else 
+    {
+        return getTimeInfo()->tm_mday;
+    }
 }
 
 uint32_t NVSWriter::getDayCount(uint8_t day)

@@ -1,7 +1,7 @@
 #ifndef APP_STEP_COUNT_H
 #define APP_STEP_COUNT_H
 
-#define STEPCT_DAY_ENTRY 20
+#define STEPCT_ENTRY_STRLEN 20
 #include "storage/NVSWriter.h"
 
 /**

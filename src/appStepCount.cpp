@@ -81,7 +81,7 @@ public:
             lv_obj_align(img, _obj[i], LV_ALIGN_CENTER, 0, 0);
 */
             lv_obj_t *label = lv_label_create(_obj[i], NULL);
-            char entry[STEPCT_DAY_ENTRY];
+            char entry[STEPCT_ENTRY_STRLEN];
             sprintf(entry, "%d: %d", _day - i, writer->getDayCount(i));
             lv_label_set_text(label, entry);
             lv_obj_align(label, _obj[i], LV_ALIGN_IN_TOP_LEFT, 0, 0);
