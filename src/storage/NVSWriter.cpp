@@ -149,6 +149,7 @@ nvs_handle NVSWriter::getNvsCountHandle()
 
 uint32_t NVSWriter::updateCount(uint32_t count)
 {
+    /*
     static int i = 0;
     if (i % 10 != 0)
     { // runs through on first run, then every 100th
@@ -156,7 +157,7 @@ uint32_t NVSWriter::updateCount(uint32_t count)
         Serial.printf("updateCount: i: %d, count in: %d, out: %d returning\n", i, count, ccount ? ccount - cdiff : count);
         return ccount ? ccount - cdiff : count - cdiff;
     }
-    i = 1;
+    i = 1; */
 
     esp_err_t err;
     int day = getTimeInfo()->tm_mday;
@@ -274,7 +275,7 @@ uint32_t NVSWriter::getDayCount(uint8_t day)
 
     try
     {
-        if (!historyLoaded)
+        if (!historyLoaded || historyLoaded + 300 < getUnixTime())
         {
             getNvsCountHandle();
             char key[STEPCT_KEY_SIZE];
@@ -284,7 +285,7 @@ uint32_t NVSWriter::getDayCount(uint8_t day)
                 countHistory[i] = read_i32(key, &nvsCountHandle);
                 Serial.printf("History count day %d:  %d\n", i+1, countHistory[i]);
             }
-            historyLoaded = true;
+            historyLoaded = getUnixTime();
         }
     }
     catch (NVSException &ex)

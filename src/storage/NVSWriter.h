@@ -62,7 +62,7 @@ private:
 
     bool isInitialized = false;
     bool hasError = false;
-    bool historyLoaded = false;
+    time_t historyLoaded = 0;
     nvs_handle nvsCountHandle = 0;
 
     //cached values

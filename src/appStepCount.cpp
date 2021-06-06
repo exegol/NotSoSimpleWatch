@@ -39,6 +39,8 @@ public:
 
             _obj = new lv_obj_t *[count];
 
+            _label = new lv_obj_t *[count];
+
             for (int i = 0; i < count; i++)
             {
                 if (direction)
@@ -80,11 +82,11 @@ public:
             lv_img_set_src(img, config[i].img);
             lv_obj_align(img, _obj[i], LV_ALIGN_CENTER, 0, 0);
 */
-            lv_obj_t *label = lv_label_create(_obj[i], NULL);
+            _label[i] = lv_label_create(_obj[i], NULL);
             char entry[STEPCT_ENTRY_STRLEN];
             sprintf(entry, "%d: %d", _day - i, writer->getDayCount(i));
-            lv_label_set_text(label, entry);
-            lv_obj_align(label, _obj[i], LV_ALIGN_IN_TOP_LEFT, 0, 0);
+            lv_label_set_text(_label[i], entry);
+            lv_obj_align(_label[i], _obj[i], LV_ALIGN_IN_TOP_LEFT, 0, 0);
 
             i == 0 ? lv_obj_align(_obj[i], NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0) : lv_obj_align(_obj[i], _obj[i - 1], direction ? LV_ALIGN_OUT_BOTTOM_LEFT : LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
 
@@ -125,8 +127,20 @@ public:
         return _obj[index];
     }
 
+    void updateLabels(NVSWriter *writer)
+    {
+        for (int i = 0; i < _count; i++)
+        {
+            char entry[STEPCT_ENTRY_STRLEN];
+            sprintf(entry, "%d: %d", _day - i, writer->getDayCount(i));
+            lv_label_set_text(_label[i], entry);
+            lv_obj_align(_label[i], _obj[i], LV_ALIGN_IN_TOP_LEFT, 0, 0);
+            
+        }
+    }
+
 private:
-    lv_obj_t *_cont, *_view, *_exit, **_obj;
+    lv_obj_t *_cont, *_view, *_exit, **_obj, **_label;
     lv_point_t *_vp;
     int _count = 0;
     int _day = 0;
@@ -143,6 +157,7 @@ void appShowStepCount(NVSWriter *writer, lv_event_cb_t event_cb)
     }
     else
     {
+        stepMenu.updateLabels(writer);
         stepMenu.hidden(false);
     }
 }
