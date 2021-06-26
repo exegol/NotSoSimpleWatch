@@ -12,4 +12,6 @@ LogWriter LogWriter::getLogger()
     {
         _logger = new LogWriter();
     }
+
+    return *_logger;
 }
