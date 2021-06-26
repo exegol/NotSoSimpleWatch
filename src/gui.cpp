@@ -18,7 +18,7 @@ Created by Lewis he on October 10, 2019.
 #include "FS.h"
 #include "SD.h"
 #include "appSetTime.h"
-#include "storage/NVSWriter.h"
+#include "storage/StepWriter.h"
 #include "appStepCount.h"
 
 #define RTC_TIME_ZONE "CST-8"
@@ -29,10 +29,16 @@ LV_IMG_DECLARE(bg);
 LV_IMG_DECLARE(bg1);
 LV_IMG_DECLARE(bg2);
 LV_IMG_DECLARE(bg3);
+
+//custom images
 LV_IMG_DECLARE(matrix1);
-LV_IMG_DECLARE(WALLPAPER_1_IMG);
-LV_IMG_DECLARE(WALLPAPER_2_IMG);
-LV_IMG_DECLARE(WALLPAPER_3_IMG);
+LV_IMG_DECLARE(diag1);
+LV_IMG_DECLARE(jupiter);
+LV_IMG_DECLARE(time2);
+
+//LV_IMG_DECLARE(WALLPAPER_1_IMG);
+//LV_IMG_DECLARE(WALLPAPER_2_IMG);
+//LV_IMG_DECLARE(WALLPAPER_3_IMG);
 LV_IMG_DECLARE(step);
 LV_IMG_DECLARE(menu);
 
@@ -338,10 +344,10 @@ private:
 
 MenuBar::lv_menu_config_t _cfg[7] = {
     {.name = "WiFi", .img = (void *)&wifi, .event_cb = wifi_event_cb},
-    {.name = "Set Time", .img = (void *)&setting, .event_cb = set_time_event_cb},
-    {.name = "Step Count", .img = (void *)&CAMERA_PNG, .event_cb = show_step_count_event_cb},
+    {.name = "Set Time", .img = (void *)&time2, .event_cb = set_time_event_cb},
+    {.name = "Step Count", .img = (void *)&diag1, .event_cb = show_step_count_event_cb},
     {.name = "Bluetooth", .img = (void *)&bluetooth, /*.event_cb = bluetooth_event_cb*/},
-    {.name = "SD Card", .img = (void *)&sd, /*.event_cb =sd_event_cb*/},
+    {.name = "Jupiter Moons", .img = (void *)&jupiter, /*.event_cb =sd_event_cb*/},
     {.name = "Light", .img = (void *)&light, /*.event_cb = light_event_cb*/},
     {.name = "Modules", .img = (void *)&modules, /*.event_cb = modules_event_cb */}
     //{.name = "Camera",  .img = (void *) &CAMERA_PNG, /*.event_cb = camera_event_cb*/ }
@@ -349,7 +355,7 @@ MenuBar::lv_menu_config_t _cfg[7] = {
 
 MenuBar menuBars;
 StatusBar bar;
-NVSWriter nvsWriter;
+StepWriter nvsWriter;
 
 /**
  * event handler for clock view 

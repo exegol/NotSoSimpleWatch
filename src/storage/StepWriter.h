@@ -17,13 +17,13 @@
 #define STEPCT_KEY_SIZE 16 //buffer size for STEPCT_DAY string
 #define STEPCT_HISTORY_SIZE 7
 
-class NVSWriter
+class StepWriter
 {
 public:
     
-    NVSWriter();
+    StepWriter();
 
-    ~NVSWriter();
+    ~StepWriter();
 
     bool init();
 

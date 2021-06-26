@@ -20,7 +20,7 @@ public:
     };
     ~StepMenu(){};
 
-    void createMenu(int count, NVSWriter *writer, lv_event_cb_t event_cb, int direction = 1)
+    void createMenu(int count, StepWriter *writer, lv_event_cb_t event_cb, int direction = 1)
     {
         if (_view == NULL) // only on initial call
         {
@@ -127,7 +127,7 @@ public:
         return _obj[index];
     }
 
-    void updateLabels(NVSWriter *writer)
+    void updateLabels(StepWriter *writer)
     {
         for (int i = 0; i < _count; i++)
         {
@@ -148,7 +148,7 @@ private:
 
 StepMenu stepMenu;
 
-void appShowStepCount(NVSWriter *writer, lv_event_cb_t event_cb)
+void appShowStepCount(StepWriter *writer, lv_event_cb_t event_cb)
 {
     if (stepMenu.self() == nullptr)
     {

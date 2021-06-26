@@ -4,7 +4,7 @@
 #include "esp_system.h"
 #include "nvs_flash.h"
 #include "nvs.h"
-#include "NVSWriter.h"
+#include "StepWriter.h"
 
 struct NVSException : public std::exception
 {
@@ -25,11 +25,11 @@ struct NVSException : public std::exception
     NVSException(esp_err_t e) { err = e; }
 };
 
-NVSWriter::NVSWriter() {}
+StepWriter::StepWriter() {}
 
-NVSWriter::~NVSWriter() {}
+StepWriter::~StepWriter() {}
 
-bool NVSWriter::init()
+bool StepWriter::init()
 {
     if (isInitialized)
     {
@@ -57,7 +57,7 @@ bool NVSWriter::init()
     throw NVSException(err);
 }
 
-int32_t NVSWriter::read_i32(const char *key, nvs_handle *handle)
+int32_t StepWriter::read_i32(const char *key, nvs_handle *handle)
 {
     int32_t i32value = 0; // value will default to 0, if not set yet in NVS
     esp_err_t err = nvs_get_i32(*handle, key, &i32value);
@@ -76,7 +76,7 @@ int32_t NVSWriter::read_i32(const char *key, nvs_handle *handle)
     return i32value;
 }
 
-void NVSWriter::write_i32(const char *key, nvs_handle *handle, int32_t value)
+void StepWriter::write_i32(const char *key, nvs_handle *handle, int32_t value)
 {
     esp_err_t err = nvs_set_i32(*handle, key, value);
     switch (err)
@@ -89,7 +89,7 @@ void NVSWriter::write_i32(const char *key, nvs_handle *handle, int32_t value)
     }
 }
 
-void NVSWriter::dayChange(uint8_t day, uint32_t count)
+void StepWriter::dayChange(uint8_t day, uint32_t count)
 {
     char key[STEPCT_KEY_SIZE];
     sprintf(key, "%s%d", STEPCT_DAY, 1);
@@ -129,7 +129,7 @@ void NVSWriter::dayChange(uint8_t day, uint32_t count)
     }
 }
 
-nvs_handle NVSWriter::getNvsCountHandle()
+nvs_handle StepWriter::getNvsCountHandle()
 {
     if (!nvsCountHandle)
     {
@@ -147,7 +147,7 @@ nvs_handle NVSWriter::getNvsCountHandle()
     return nvsCountHandle;
 }
 
-uint32_t NVSWriter::updateCount(uint32_t count)
+uint32_t StepWriter::updateCount(uint32_t count)
 {
     /*
     static int i = 0;
@@ -256,7 +256,7 @@ uint32_t NVSWriter::updateCount(uint32_t count)
     return ccount ? ccount - cdiff : count - cdiff;
 }
 
-uint8_t NVSWriter::getCDay()
+uint8_t StepWriter::getCDay()
 {
     if (cday)
     {
@@ -268,7 +268,7 @@ uint8_t NVSWriter::getCDay()
     }
 }
 
-uint32_t NVSWriter::getDayCount(uint8_t day)
+uint32_t StepWriter::getDayCount(uint8_t day)
 {
     if (day >= STEPCT_HISTORY_SIZE)
         return 0;
@@ -295,13 +295,13 @@ uint32_t NVSWriter::getDayCount(uint8_t day)
     return countHistory[day];
 }
 
-time_t NVSWriter::getUnixTime() 
+time_t StepWriter::getUnixTime() 
 {
     time_t now;
     return time(&now);
 }
 
-tm* NVSWriter::getTimeInfo()
+tm* StepWriter::getTimeInfo()
 {
     tm* tm = new struct tm();
     time_t time = getUnixTime();
